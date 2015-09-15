@@ -1,0 +1,32 @@
+gcc -Wall -O2 -g -fPIC -MMD  -I/home/csrgyin/android_build/external/qemu/android/config/target-arm -I. -I/home/csrgyin/android_build/external/qemu -I/home/csrgyin/android_build/external/qemu/DECAF_plugins -I/home/csrgyin/android_build/external/qemu/fpu -I/home/csrgyin/android_build/external/qemu/DECAF_shared -I/home/csrgyin/android_build/external/qemu/target-arm -I/home/csrgyin/android_build/external/qemu/objs -I/home/csrgyin/android_build/external/qemu/slirp  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_GNU_SOURCE -DNEED_CPU_H -I -c -o hookapitests.o hookapitests.c
+In file included from /home/csrgyin/android_build/external/qemu/target-arm/cpu.h:30:0,
+                 from /home/csrgyin/android_build/external/qemu/qemu-common.h:129,
+                 from /home/csrgyin/android_build/external/qemu/DECAF_shared/DECAF_types.h:50,
+                 from hookapitests.c:21:
+/home/csrgyin/android_build/external/qemu/cpu-defs.h:99:13: error: size of array ‘dummy’ is too large
+     uint8_t dummy[(1 << CPU_TLB_ENTRY_BITS) -
+             ^
+/home/csrgyin/android_build/external/qemu/cpu-defs.h:105:12: error: size of array ‘CPUTLBEntry_wrong_size’ is negative
+ extern int CPUTLBEntry_wrong_size[sizeof(CPUTLBEntry) == (1 << CPU_TLB_ENTRY_BITS) ? 1 : -1];
+            ^
+hookapitests.c: In function ‘handle_module_load’:
+hookapitests.c:41:2: warning: format ‘%llX’ expects argument of type ‘long long unsigned int’, but argument 4 has type ‘gva_t’ [-Wformat=]
+  monitor_printf(default_mon,"module name=%s loaded, base address-%016llX, size is 0x%08x \n",params->lm.name,params->lm.base,params->lm.size);
+  ^
+hookapitests.c: In function ‘createproc_callback’:
+hookapitests.c:58:3: warning: implicit declaration of function ‘DECAF_printf’ [-Wimplicit-function-declaration]
+   DECAF_printf("Process found: pid=%08x, cr3=%08x\n", targetpid, targetcr3);
+   ^
+hookapitests.c: In function ‘hookapitests_init’:
+hookapitests.c:73:2: warning: implicit declaration of function ‘DECAF_output_init’ [-Wimplicit-function-declaration]
+  DECAF_output_init(NULL);
+  ^
+In file included from hookapitests.c:98:0:
+plugin_cmds.h: At top level:
+plugin_cmds.h:4:2: error: unknown field ‘mhandler’ specified in initializer
+  .mhandler.cmd = do_hookapitests,
+  ^
+hookapitests.c:35:19: warning: ‘module_info’ defined but not used [-Wunused-variable]
+ static tmodinfo_t module_info;
+                   ^
+make: *** [hookapitests.o] Error 1

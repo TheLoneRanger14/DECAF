@@ -48,6 +48,10 @@
 #include "memcheck/memcheck_api.h"
 #endif  // CONFIG_MEMCHECK
 
+/* DECAF Addtions start */
+#include "DECAF_shared/DECAF_callback_to_QEMU.h"
+/* DECAF Additions end */
+
 //#define DEBUG_TB_INVALIDATE
 //#define DEBUG_FLUSH
 //#define DEBUG_TLB
@@ -2066,6 +2070,12 @@ int tlb_set_page_exec(CPUState *env, target_ulong vaddr,
 
     if (prot & PAGE_EXEC) {
         te->addr_code = code_address;
+
+        /* DECAF Addition Starts */
+        if (DECAF_is_callback_needed_simple(DECAF_TLB_EXEC_CB))
+        	DECAF_invoke_tlb_exec_callback(env, vaddr);
+        /* DECAF Addition Ends */
+
     } else {
         te->addr_code = -1;
     }

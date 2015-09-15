@@ -1,19 +1,19 @@
 /**
  * Copyright (C) <2012> <Syracuse System Security (Sycure) Lab>
  *
- * This program is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU General Public License as 
- * published by the Free Software Foundation; either version 2 of 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public 
- * License along with this program; if not, write to the Free 
- * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ * You should have received a copy of the GNU General Public
+ * License along with this program; if not, write to the Free
+ * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
 **/
 
@@ -26,16 +26,27 @@
 
 #include <dlfcn.h>
 #include "sysemu.h"
+#include "block_int.h"
+
 
 #include "DECAF_shared/DECAF_config.h"
-
+#include "DECAF_shared/linux_vmi_.h"
 #include "DECAF_shared/DECAF_main.h"
 #include "DECAF_shared/DECAF_main_internal.h"
 #include "DECAF_shared/DECAF_vm_compress.h"
 #include "DECAF_shared/DECAF_cmds.h"
+#include "DECAF_shared/DECAF_fileio.h"
+
+
+extern void VMI_init(void);
+
+
 //#include "DECAF_shared/procmod.h" //remove this later
+disk_info_t disk_info_internal[5];
 
 int should_monitor = 1;
+static int devices = 0;
+
 
 plugin_interface_t *decaf_plugin = NULL;
 static void *plugin_handle = NULL;
@@ -90,7 +101,7 @@ gpa_t DECAF_get_phys_addr(CPUState* env, gva_t addr)
     }
 #endif
     return (gpa_t) qemu_ram_addr_from_host_nofail (
-		(void*)((addr & TARGET_PAGE_MASK) + 
+		(void*)((addr & TARGET_PAGE_MASK) +
 		env->tlb_table[mmu_idx][index].addend));
 }
 
@@ -371,7 +382,7 @@ void DECAF_do_load_plugin_internal(Monitor *mon, const char *plugin_path)
     decaflog = fopen("decaf.log", "w");
     assert(decaflog != NULL);
 
-    if (decaf_plugin->bdrv_open) 
+    if (decaf_plugin->bdrv_open)
     {
         BlockInterfaceType interType = IF_NONE;
         int index = 0;
@@ -382,7 +393,7 @@ void DECAF_do_load_plugin_internal(Monitor *mon, const char *plugin_path)
           do
           {
             //LOK: Older qemu versions don't have this function
-            // so we just inline the new definition - it 
+            // so we just inline the new definition - it
             // gets pretty involved
 #ifndef QEMU_ANDROID_GINGERBREAD
             drvInfo = drive_get_by_index(interType, index);
@@ -415,7 +426,7 @@ void DECAF_do_load_plugin_internal(Monitor *mon, const char *plugin_path)
             //}
             _unit_id = _max_devs ? index % _max_devs : index;
 
-            drvInfo = drive_get(interType, 
+            drvInfo = drive_get(interType,
                                 //drive_index_to_bus_id(interType, index),
                                 _bus_id,
                                 //drive_index_to_uint_id(interType, index));
@@ -611,7 +622,7 @@ extern void DECAF_callback_init(void);
 void DECAF_init(void)
 {
   DECAF_callback_init();
-
+  VMI_init();
   //DECAF_virtdev_init();
 
     // AWH - change in API, added NULL as first parm
@@ -620,16 +631,12 @@ void DECAF_init(void)
     * This is because, TEMU_load restores guest.log, which is read into function map.
     */
     REGISTER_SAVEVM(NULL, "TEMU", 0, 1, DECAF_save, DECAF_load, NULL);
-  
+
+    
     DECAF_vm_compress_init();
 
-    //init_hookapi();
-
-    DS_init(); 
-    /** Replaced these wih DroidScope's Versions
-    function_map_init();
-    procmod_init();
-    **/
+    //AVB - We will deal with this a little later
+    //DS_init();
 }
 
 
@@ -656,9 +663,6 @@ void DECAF_nic_out(gva_t addr, int size)
 {
     if (!DECAF_emulation_started)
         return;
-#if 0 //LOK: Removed // AWH TAINT_ENABLED
-    taintcheck_nic_out(addr, size);
-#endif
 }
 
 
@@ -666,69 +670,82 @@ void DECAF_nic_in(gva_t addr, int size)
 {
     if (!DECAF_emulation_started)
         return;
-#if 0 //LOK: Removed // AWH TAINT_ENABLED
-    taintcheck_nic_in(addr, size);
-#endif
 }
-
-#if 0 //LOK: Removed - why is this here in the first place?
-/*
- * keyboard related functions
- */
-void *DECAF_KbdState = NULL;
-
-void DECAF_read_keystroke(void *s)
-{
-    if (s != DECAF_KbdState)
-        return;
-
-    if (decaf_plugin && decaf_plugin->send_keystroke)
-        decaf_plugin->send_keystroke(cpu_single_env->tempidx);
-}
-
-static void DECAF_virtdev_write_data(void *opaque, gva_t addr,
-                target_ulong val)
-{
-        static char syslogline[GUEST_MESSAGE_LEN];
-        static int pos = 0;
-
-        if (pos >= GUEST_MESSAGE_LEN - 2)
-                pos = GUEST_MESSAGE_LEN;
-
-        if ((syslogline[pos++] = (char) val) == 0) {
-                handle_guest_message(syslogline);
-                fprintf(guestlog, "%s", syslogline);
-                fflush(guestlog);
-                pos = 0;
-        }
-}
-
-
-void DECAF_virtdev_init(void)
-{
-        int res = register_ioport_write(0x68, 1, 1, DECAF_virtdev_write_data, NULL);
-        if (res) {
-                fprintf(stderr, "failure on initializing TEMU virtual device\n");
-                exit(-1);
-        }
-#if !defined(_REPLAY_) || defined(_RECORD_)
-        if (!(guestlog = fopen("guest.log", "w"))) {
-                fprintf(stderr, "failure on opening guest.log \n");
-                exit(-1);
-        }
-#endif
-}
-
-#endif 
-
 void DECAF_after_loadvm(const char *param)
 {
     if (decaf_plugin && decaf_plugin->after_loadvm)
         decaf_plugin->after_loadvm(param);
 }
 
-int DECAF_bdrv_pread(void *bs, int64_t offset, void *buf, int count)
+DECAF_errno_t DECAF_read_ptr(CPUState* env, gva_t vaddr, gva_t *pptr)
 {
-    return bdrv_pread((BlockDriverState *) bs, offset, buf, count);
+	int ret = DECAF_read_mem(env, vaddr, sizeof(gva_t), pptr);
+	if(0 == ret)
+	{
+#ifdef TARGET_WORDS_BIGENDIAN
+		convert_endian_4b(pptr);
+#endif
+	}
+	return ret;
 }
+
+// AVB, This function is used to read 'n' bytes off the disk images give by `opaque' 
+// at an offset
+int DECAF_bdrv_pread(void *opaque, int64_t offset, void *buf, int count) {
+
+	return bdrv_pread((BlockDriverState *)opaque, offset, buf, count);
+
+}
+
+// AVB, This function is used to open the disk on sleuthkit by calling `tsk_fs_open_img'.
+void DECAF_bdrv_open(int index, void *opaque) {
+
+  TSK_FS_INFO *fs=NULL;
+  TSK_OFF_T a_offset = 0;
+  unsigned long img_size = ((BlockDriverState *)opaque)->total_sectors * 512;
+  int ret = 0;
+  
+  char *drive_name = ((BlockDriverState *)opaque)->device_name;
+  char *drive_path = ((BlockDriverState *)opaque)->filename;
+  char buf[128];
+  memset( buf, '\0', 128 );
+
+  
+  if(!qemu_pread)
+	  qemu_pread=(qemu_pread_t)DECAF_bdrv_pread;
+  
+  disk_info_internal[devices].bs = opaque;
+  disk_info_internal[devices].img = tsk_img_open(1, (const char **) &drive_path, TSK_IMG_TYPE_DETECT, 0);
+
+  ret = DECAF_bdrv_pread(opaque, 0, buf, 128);
+
+
+  int mover = 0;
+  while(mover != 128) {
+	monitor_printf(default_mon, "%02x", (unsigned int) *(buf + mover));
+	++mover;
+  }
+  monitor_printf(default_mon, "\n");
+ 
+  monitor_printf(default_mon, "inside bdrv open, drv addr= 0x%0x, size= %lu name = %s path = %s ret = %d\n", opaque, img_size, drive_name, drive_path, ret);
+  
+  if (disk_info_internal[devices].img == NULL)
+  {
+    monitor_printf(default_mon, "img_open error! \n",opaque);
+  }
+
+  // TODO: AVB, also add an option of 56 as offset with sector size of 4k, Sector size is now assumed to be 512 by default
+  if(!(disk_info_internal[devices].fs = tsk_fs_open_img(disk_info_internal[devices].img, 0 ,TSK_FS_TYPE_YAFFS2)))
+  {
+	monitor_printf(default_mon, "fs_open error! \n",opaque);
+  }	
+  else
+  {
+  	monitor_printf(default_mon, "fs_open = %s \n",(disk_info_internal[devices].fs)->duname);
+  }
+
+  ++devices;
+}
+
+
 

@@ -715,4 +715,9 @@ fi
 
 log "Generate   : $config_h"
 
+echo "Configuring Sleuthkit now! Please wait"
+cd ./DECAF_shared/sleuthkit
+./configure --disable-java --enable-silent-rules --prefix=$PWD CFLAGS=-m32 CXXFLAGS=-m32 LDFLAGS=-m32 > /dev/null 2>&1
+cd ../..
+
 echo "Ready to go. Type 'make' to build emulator"

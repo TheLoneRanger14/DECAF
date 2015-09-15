@@ -7,6 +7,11 @@
 #include "qdict.h"
 #include "block.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+
 extern Monitor *cur_mon;
 extern Monitor *default_mon;
 
@@ -86,5 +91,9 @@ Monitor* monitor_fake_new(void* opaque, MonitorFakeFunc cb);
 int      monitor_fake_get_bytes(Monitor* mon);
 void     monitor_fake_free(Monitor* mon);
 #endif
+
+#ifdef __cplusplus
+}
+#endif // __cplusplus
 
 #endif /* !MONITOR_H */

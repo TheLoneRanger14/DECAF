@@ -4495,7 +4495,9 @@ int main(int argc, char **argv, char **envp)
         do_loadvm(cur_mon, loadvm);
 
 /** START DECAF ADDITIONS **/
+	//monitor_printf(default_mon,"calling Decaf init");
     DECAF_init();
+	DECAF_blocks_init();
     //AWH - TODO: Handle all of the command line options here
     //LOK: Re-enabled the load_plugin option
     if ( (loadvm == NULL) &&  (load_plugin != NULL) )

@@ -1,19 +1,19 @@
 /**
  * Copyright (C) <2012> <Syracuse System Security (Sycure) Lab>
  *
- * This program is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU General Public License as 
- * published by the Free Software Foundation; either version 2 of 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public 
- * License along with this program; if not, write to the Free 
- * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ * You should have received a copy of the GNU General Public
+ * License along with this program; if not, write to the Free
+ * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
 **/
 
@@ -35,7 +35,7 @@
       return;                   \
     }                           \
   }                             \
-  while (0)                     
+  while (0)
 
 #define DEFENSIVE_CHECK1(_bool, _ret) \
   do                                  \
@@ -45,9 +45,16 @@
       return (_ret);                  \
     }                                 \
   }                                   \
-  while (0)                     
+  while (0)
 
 #include "qemu-common.h"
+
+#ifndef LIST_FOREACH_SAFE
+#define LIST_FOREACH_SAFE(var, head, field, tvar)                       \
+          for ((var) = LIST_FIRST((head));                                \
+              (var) && ((tvar) = LIST_NEXT((var), field), 1);             \
+              (var) = (tvar))
+#endif
 
 typedef target_ulong gva_t;
 //Interestingly enough - target_phys_addr_t is defined as uint64 - what to do?

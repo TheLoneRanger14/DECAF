@@ -430,6 +430,10 @@ static inline void DECAF_flushTranslationCache(void)
 ///send a keystroke into the guest system
 extern void do_send_key(const char *string);
 
+/* AVB, additions from the latest DECAF */
+DECAF_errno_t DECAF_read_ptr(CPUState *env, gva_t vaddr, gva_t *pptr);
+
+
 #ifdef __cplusplus
 }
 #endif

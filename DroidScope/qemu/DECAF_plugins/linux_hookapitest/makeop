@@ -1,0 +1,56 @@
+gcc -Wall -O2 -g -fPIC -MMD  -I. -I/home/csrgyin/los_almos/decaf/DECAF/decaf -I/home/csrgyin/los_almos/decaf/DECAF/decaf/plugins -I/home/csrgyin/los_almos/decaf/DECAF/decaf/fpu -I/home/csrgyin/los_almos/decaf/DECAF/decaf/shared -I/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386 -I/home/csrgyin/los_almos/decaf/DECAF/decaf/i386-softmmu -I/home/csrgyin/los_almos/decaf/DECAF/decaf/slirp  -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_GNU_SOURCE -DNEED_CPU_H -I-pthread -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include   -c -o hookapitests.o hookapitests.c
+In file included from hookapitests.c:22:0:
+/home/csrgyin/los_almos/decaf/DECAF/decaf/shared/DECAF_main.h: In function ‘DECAF_flushTranslationCache’:
+/home/csrgyin/los_almos/decaf/DECAF/decaf/shared/DECAF_main.h:284:14: warning: unused variable ‘env’ [-Wunused-variable]
+    CPUState* env;
+              ^
+In file included from custom_handlers.h:18:0,
+                 from hookapitests.c:27:
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h: In function ‘DECAF_write_register’:
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:389:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case ax_reg: *(uint16_t*)(&cpu_single_env->regs[R_EAX]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:391:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case cx_reg: *(uint16_t*)(&cpu_single_env->regs[R_ECX]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:393:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case dx_reg: *(uint16_t*)(&cpu_single_env->regs[R_EDX]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:395:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case bx_reg: *(uint16_t*)(&cpu_single_env->regs[R_EBX]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:397:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case sp_reg: *(uint16_t*)(&cpu_single_env->regs[R_ESP]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:399:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case bp_reg: *(uint16_t*)(&cpu_single_env->regs[R_EBP]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:401:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case si_reg: *(uint16_t*)(&cpu_single_env->regs[R_ESI]) = *(uint16_t*)buf;
+     ^
+/home/csrgyin/los_almos/decaf/DECAF/decaf/target-i386/DECAF_target.h:403:5: warning: dereferencing type-punned pointer will break strict-aliasing rules [-Wstrict-aliasing]
+     case di_reg: *(uint16_t*)(&cpu_single_env->regs[R_EDI]) = *(uint16_t*)buf;
+     ^
+hookapitests.c: In function ‘hook_all’:
+hookapitests.c:43:18: error: ‘params’ undeclared (first use in this function)
+  CPUState* env = params->bb.env;
+                  ^
+hookapitests.c:43:18: note: each undeclared identifier is reported only once for each function it appears in
+hookapitests.c:54:4: warning: implicit declaration of function ‘funcmap_get_name_c’ [-Wimplicit-function-declaration]
+    == funcmap_get_name_c(param->bb.tb->pc, targetcr3, &modname,
+    ^
+In file included from hookapitests.c:22:0:
+hookapitests.c: At top level:
+/home/csrgyin/los_almos/decaf/DECAF/decaf/shared/DECAF_main.h:79:13: warning: ‘bs_init_done’ defined but not used [-Wunused-variable]
+ static bool bs_init_done=false;
+             ^
+hookapitests.c:34:21: warning: ‘func_handle’ defined but not used [-Wunused-variable]
+ static DECAF_Handle func_handle = DECAF_NULL_HANDLE;
+                     ^
+hookapitests.c:35:21: warning: ‘VirtualAlloc_handle’ defined but not used [-Wunused-variable]
+ static DECAF_Handle VirtualAlloc_handle = DECAF_NULL_HANDLE;
+                     ^
+hookapitests.c:83:13: warning: ‘func_call’ defined but not used [-Wunused-function]
+ static void func_call(void *opaque)
+             ^
+make: *** [hookapitests.o] Error 1

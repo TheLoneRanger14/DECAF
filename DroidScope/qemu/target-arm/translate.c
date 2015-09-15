@@ -9908,9 +9908,10 @@ static inline void gen_intermediate_code_internal(CPUState *env,
       }
 
     /** START DECAF ADDITIONS **/
-    cur_pc = pc_start;
+    cur_pc = dc->pc;
     if (DECAF_is_BlockBeginCallback_needed(cur_pc))
     {
+	  
       TCGv_ptr tmpTb = tcg_const_ptr((tcg_target_ulong)tb);
       TCGv tmpPC = tcg_temp_new();
       tcg_gen_movi_tl(tmpPC, cur_pc);

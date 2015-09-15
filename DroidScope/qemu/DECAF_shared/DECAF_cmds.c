@@ -19,24 +19,27 @@
 
 #include "DECAF_cmds.h"
 //#include "procmod.h"
+#include "vmi_c_wrapper.h"
 
 void do_guest_ps(Monitor *mon)
 {
   //list_procs(mon);
-  linux_ps(mon);
+  //linux_ps(mon);
+  VMI_list_processes(mon);
 }
 
 void do_guest_pt(Monitor* mon)
 {
-  linux_pt(mon);
+  //linux_pt(mon);
 }
 
 void do_guest_modules(Monitor* mon, int pid)
 {
-  linux_print_mod(mon, pid); 
+  //linux_print_mod(mon, pid); 
+  VMI_list_modules(mon, (uint32_t)pid);
 }
 
 void do_sym_to_addr(Monitor* mon, int pid, const char* modName, const char* symName)
 {
-  get_symbol_address(mon, pid, modName, symName);
+  //get_symbol_address(mon, pid, modName, symName);
 }

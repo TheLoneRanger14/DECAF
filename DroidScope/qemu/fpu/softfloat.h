@@ -74,6 +74,17 @@ typedef int64_t int64;
 #define SNAN_BIT_IS_ONE		0
 #endif
 
+#ifdef __cplusplus
+
+#ifndef CONFIG_SOFTFLOAT
+
+#define CONFIG_SOFTFLOAT 1
+
+#endif
+
+#endif
+
+
 /*----------------------------------------------------------------------------
 | The macro `FLOATX80' must be defined to enable the extended double-precision
 | floating-point format `floatx80'.  If this macro is not defined, the

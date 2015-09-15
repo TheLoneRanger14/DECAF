@@ -32,6 +32,8 @@ OBJS_DIR     := objs
 LIBS_DIR     := $(OBJS_DIR)/libs
 CONFIG_MAKE  := $(OBJS_DIR)/config.make
 CONFIG_H     := $(OBJS_DIR)/config-host.h
+SLEUTHKIT_LIB=$(SRC_PATH)/DECAF_shared/sleuthkit/lib/libtsk.a
+SLEUTHKIT_SHARED_LIB=$(SRC_PATH)/DECAF_shared/sleuthkit/lib/libtsk.so
 
 ifeq ($(wildcard $(CONFIG_MAKE)),)
     $(error "The configuration file '$(CONFIG_MAKE)' doesnt' exist, please run the "android-configure.sh" script)
@@ -53,7 +55,7 @@ BUILD_HOST_STATIC_LIBRARY := $(BUILD_SYSTEM)/host_static_library.make
 
 DEPENDENCY_DIRS :=
 
-all: libraries executables
+all: sleuthkit libraries executables
 EXECUTABLES :=
 LIBRARIES   :=
 
@@ -67,12 +69,22 @@ endif
 clean: clean-intermediates
 
 distclean: clean clean-config
+	rm -rf $(SLEUTHKIT_LIB)
+	$(MAKE) -C ./DECAF_shared/sleuthkit uninstall > /dev/null 2>&1
+	$(MAKE) -C ./DECAF_shared/sleuthkit distclean > /dev/null 2>&1
 
 # let's roll
 include Makefile.android
 
 libraries: $(LIBRARIES)
 executables: $(EXECUTABLES)
+
+sleuthkit: $(SLEUTHKIT_SHARED_LIB)
+
+$(SLEUTHKIT_SHARED_LIB): 
+	@echo "Building Sleuthkit, please wait..."
+	$(MAKE) -j32 -C ./DECAF_shared/sleuthkit > /dev/null 2>&1
+	$(MAKE) -C ./DECAF_shared/sleuthkit install > /dev/null 2>&1
 
 clean-intermediates:
 	rm -rf $(OBJS_DIR)/intermediates $(EXECUTABLES) $(LIBRARIES)

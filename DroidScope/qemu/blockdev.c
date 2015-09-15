@@ -597,3 +597,18 @@ int do_change_block(Monitor *mon, const char *device,
     }
     return monitor_read_bdrv_key_start(mon, bs, NULL, NULL);
 }
+
+// AVB, Traverses the disk devices and adds them to DECAF's internal list if
+// they are either SCSI, IDE or default_media
+void DECAF_blocks_init()
+{
+	DriveInfo *dinfo;
+	int index = 0;
+    QTAILQ_FOREACH(dinfo, &drives, next) {
+        //if (dinfo->type == IF_SD || dinfo->type == IF_SCSI || dinfo->type == IF_IDE ) {
+			DECAF_bdrv_open(index,(void *)dinfo->bdrv);
+			++index;
+        //}
+    }
+}	
+

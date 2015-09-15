@@ -285,4 +285,8 @@ typedef enum {
 #define BLKDBG_EVENT(bs, evt) bdrv_debug_event(bs, evt)
 void bdrv_debug_event(BlockDriverState *bs, BlkDebugEvent event);
 
+
+// TODO: AVB, add comment
+void DECAF_blocks_init(void);
+
 #endif

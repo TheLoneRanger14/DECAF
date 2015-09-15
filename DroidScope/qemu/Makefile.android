@@ -45,7 +45,7 @@ ifeq ($(BUILD_DEBUG_EMULATOR),true)
     MY_CFLAGS += -fno-PIC -falign-functions=0
 endif
 
-MY_LDLIBS :=
+MY_LDLIBS := $(LOCAL_PATH)/DECAF_shared/sleuthkit/lib/libtsk.a
 
 #################################################
 # START DECAF ADDITIONS

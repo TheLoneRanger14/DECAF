@@ -43,6 +43,10 @@ extern QemuOpts *drive_add(const char *file, const char *fmt, ...);
 extern DriveInfo *drive_init(QemuOpts *arg, int default_to_scsi,
                              int *fatal_error);
 
+//AVB, DECAF addition.
+extern void DECAF_bdrv_open(int index, void *opaque);
+
+
 /* device-hotplug */
 
 DriveInfo *add_init_drive(const char *opts);

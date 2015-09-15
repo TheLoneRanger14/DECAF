@@ -1,3 +1,8 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 /* Native implementation of soft float functions */
 #include <math.h>
 
@@ -529,3 +534,8 @@ INLINE floatx80 floatx80_scalbn(floatx80 a, int n STATUS_PARAM)
 }
 
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+

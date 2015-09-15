@@ -1,19 +1,19 @@
 /**
  * Copyright (C) <2012> <Syracuse System Security (Sycure) Lab>
  *
- * This program is free software; you can redistribute it and/or 
- * modify it under the terms of the GNU General Public License as 
- * published by the Free Software Foundation; either version 2 of 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public 
- * License along with this program; if not, write to the Free 
- * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, 
+ * You should have received a copy of the GNU General Public
+ * License along with this program; if not, write to the Free
+ * Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
 **/
 
@@ -23,7 +23,7 @@
  *  Created on: Apr 10, 2012
  *      Author: heyin@syr.edu
  *  LOK: Overhauled on 25 DEC 2012
- * 
+ *
  */
 #include <sys/queue.h>
 #include <stdio.h>
@@ -34,6 +34,7 @@
 #include "DECAF_shared/DECAF_callback.h"
 #include "DECAF_shared/DECAF_callback_to_QEMU.h"
 #include "DECAF_shared/utils/HashtableWrapper.h"
+#include "DECAF_shared/DECAF_types.h"
 
 //LOK: The callback logic is separated into two parts
 //  1. the interface between QEMU and callback
@@ -83,7 +84,7 @@ static int enableAllBlockEndCallbacksCount = 0;
 
 //We use hashtables to keep track of individual basic blocks
 // that is associated with a callback - we ignore
-// the conditional that is registered with the callback 
+// the conditional that is registered with the callback
 // right now - that is the conditional has been changed
 // into a simple "enable" bit. The reasoning is that the condition is controlled
 // by the user, and so there is no way for us to update
@@ -129,7 +130,8 @@ typedef struct callback_struct{
 	gva_t from;
 	gva_t to;
 	OCB_t ocb_type;
-        DECAF_cond_func_t cb_cond_func;
+
+    DECAF_cond_func_t cb_cond_func;
 	DECAF_callback_func_t callback;
 
 	LIST_ENTRY(callback_struct) link;
@@ -142,9 +144,17 @@ typedef struct callback_struct{
 static LIST_HEAD(callback_list_head, callback_struct) callback_list_heads[DECAF_LAST_CB];
 
 
-//iterate through the appropriate list and return true if 
+
+//AVB: tlb check callback
+int DECAF_is_callback_needed_simple(DECAF_callback_type_t cb_type)
+{
+  return !LIST_EMPTY(&callback_list_heads[cb_type]);
+}
+
+//iterate through the appropriate list and return true if
 // either cb_cond_func is NULL or if the user function returns
 // true
+
 int DECAF_is_callback_needed(DECAF_callback_type_t cb_type, gva_t cur_pc, gva_t next_pc)
 {
   callback_struct_t *cb_struct;
@@ -154,7 +164,7 @@ int DECAF_is_callback_needed(DECAF_callback_type_t cb_type, gva_t cur_pc, gva_t 
     return (0);
   }
 
-  LIST_FOREACH(cb_struct, &callback_list_heads[cb_type], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[cb_type], link)
   {
     DEFENSIVE_CHECK1(cb_struct == NULL, 0);
 
@@ -166,7 +176,7 @@ int DECAF_is_callback_needed(DECAF_callback_type_t cb_type, gva_t cur_pc, gva_t 
     {
       return (1);
     }
-  }    
+  }
   return (0);
 }
 
@@ -180,15 +190,18 @@ int DECAF_is_BlockBeginCallback_needed(gva_t pc)
     return (1);
   }
 
+
   //TODO: FIX THIS LOGIC It doesn't make sense
   // since we make the call here, it will never get down to the
   // other tests - because if there is OBBPage or wahtever
   // then the callback function is going to be NULL
   // which makes this return 1.
+  
   if (DECAF_is_callback_needed(DECAF_BLOCK_BEGIN_CB, pc, INV_ADDR))
   {
     return (1);
   }
+  
 
   if (CountingHashtable_exist(pOBBPageTable, pc & TARGET_PAGE_MASK))
   {
@@ -339,7 +352,7 @@ DECAF_Handle DECAF_registerOptimizedBlockEndCallback(
   cb_struct->to = to;
   cb_struct->ocb_type = OCB_ALL;
   cb_struct->cb_cond_func = NULL;
-  
+
 
   if ( (from == INV_ADDR) && (to == INV_ADDR) )
   {
@@ -449,7 +462,7 @@ DECAF_errno_t DECAF_unregisterOptimizedBlockBeginCallback(DECAF_Handle handle)
   // callback and its conditions and then remove it from the
   // corresonding hashtable
 
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_BEGIN_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_BEGIN_CB], link)
   {
     DEFENSIVE_CHECK1(cb_struct == NULL, NULL_POINTER_ERROR);
 
@@ -528,7 +541,7 @@ DECAF_errno_t DECAF_unregisterOptimizedBlockEndCallback(DECAF_Handle handle)
   // callback and its conditions and then remove it from the
   // corresonding hashtable
 
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_END_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_END_CB], link)
   {
     DEFENSIVE_CHECK1(cb_struct == NULL, NULL_POINTER_ERROR);
 
@@ -632,7 +645,7 @@ void helper_DECAF_invoke_block_begin_callback(CPUState* env, TranslationBlock* t
   params.bb.tb = tb;
 
   //FIXME: not thread safe
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_BEGIN_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_BEGIN_CB], link)
   {
     DEFENSIVE_CHECK0(cb_struct == NULL);
 
@@ -683,7 +696,7 @@ void helper_DECAF_invoke_block_end_callback(CPUState* env, TranslationBlock* tb,
   // from DECAF_getPC(env);
 
   //FIXME: not thread safe
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_END_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_BLOCK_END_CB], link)
   {
     DEFENSIVE_CHECK0(cb_struct == NULL);
 
@@ -718,7 +731,7 @@ void helper_DECAF_invoke_insn_begin_callback(CPUState* env, gva_t pc)
   params.ib.cur_pc = pc;
 
   //FIXME: not thread safe
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_INSN_BEGIN_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_INSN_BEGIN_CB], link)
   {
     DEFENSIVE_CHECK0(cb_struct == NULL);
 
@@ -737,7 +750,7 @@ void helper_DECAF_invoke_insn_end_callback(CPUState* env, gva_t pc)
   params.ie.cur_pc = pc;
 
   //FIXME: not thread safe
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_INSN_END_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_INSN_END_CB], link)
   {
     DEFENSIVE_CHECK0(cb_struct == NULL);
 
@@ -757,7 +770,7 @@ void helper_DECAF_invoke_syscall_callback(CPUState* env, gva_t pc, target_ulong 
   params.sc.syscall_num = num;
 
   //FIXME: not thread safe
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_SYSCALL_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_SYSCALL_CB], link)
   {
     DEFENSIVE_CHECK0(cb_struct == NULL);
 
@@ -768,7 +781,7 @@ void helper_DECAF_invoke_syscall_callback(CPUState* env, gva_t pc, target_ulong 
 void DECAF_invoke_PGD_write_callback(CPUState* env, gpa_t oldpgd, gpa_t newpgd
 #ifdef TARGET_ARM
 , uint32_t c2base
-#endif 
+#endif
 )
 {
   callback_struct_t *cb_struct = NULL;
@@ -800,7 +813,7 @@ void DECAF_invoke_PGD_write_callback(CPUState* env, gpa_t oldpgd, gpa_t newpgd
 #endif
 
   //FIXME: not thread safe
-  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_PGD_WRITE_CB], link) 
+  LIST_FOREACH(cb_struct, &callback_list_heads[DECAF_PGD_WRITE_CB], link)
   {
     DEFENSIVE_CHECK0(cb_struct == NULL);
 
@@ -811,6 +824,8 @@ void DECAF_callback_init(void)
 {
   int i;
 
+  //monitor_printf(default_mon,"Inside DECAF callback init(DroidScope)\n");
+  
   for(i=0; i<DECAF_LAST_CB; i++)
   {
     LIST_INIT(&callback_list_heads[i]);
@@ -827,4 +842,21 @@ void DECAF_callback_init(void)
   enableAllBlockBeginCallbacksCount = 0;
   bEnableAllBlockEndCallbacks = 0;
   enableAllBlockEndCallbacksCount = 0;
+}
+
+/* Added from the new DECAF */
+void DECAF_invoke_tlb_exec_callback(CPUState *env, gva_t vaddr)
+{
+	  callback_struct_t *cb_struct, *cb_temp;
+	  DECAF_Callback_Params params;
+
+	  if ((env == NULL) || (vaddr == 0)) {
+	    return;
+	  }
+	  params.tx.env = env;
+	  params.tx.vaddr = vaddr;
+	  LIST_FOREACH_SAFE(cb_struct, &callback_list_heads[DECAF_TLB_EXEC_CB], link, cb_temp) {
+		  //AVB - No enable checking
+		  cb_struct->callback(&params);
+	  }
 }
