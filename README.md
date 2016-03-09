@@ -18,13 +18,13 @@ DECAF(short for Dynamic Executable Code Analysis Framework) is a binary analysis
 DECAF(Dynamic Executable Code Analysis Framework) is the successor to the binary analysis techniques developed for TEMU ( dynamic analysis component of BitBlaze ) as part of Heng Yin's work on BitBlaze project headed up by Dawn Song. DECAF builds upon TEMU. We appreciate all that worked with us on that project.
 
 
-![alt tag](http://sycurelab.ecs.syr.edu/image/overall_decaf.jpg)
+![alt tag](http://sycurelab.ecs.syr.edu/image/overall_of_decaf.jpg)
 
 Fig 1 the overall architecture of DECAF
 
 Fig 1 illustrates the overall architecture of DECAF. DECAF is a platform-agnostic whole-system dynamic binary analysis framework. It provides the following key features.
 
-**Right-on-Time Virtual Machine Introspection**
+**Just-in-Time Virtual Machine Introspection**
 
 Different with TEMU, DECAF doesn’t use guest driver to retrieve os-level semantics. The VMI component of DECAF is able to reconstruct a fresh OS-level view of the virtual machine, including processes, threads, code modules, and symbols to support binary analysis. Further, in order to support multiple architectures and operating systems, it follows as a platform-agnostic design. The workflow for extracting OS-level semantic information is common across multiple architectures and operating systems. The only platform- specific handling lies in what kernel data structures and what fields to extract information from.
 
@@ -42,10 +42,10 @@ DECAF provides an event-driven programming interface. It means that the paradigm
 
 **Dynamic instrumentation management**
 
-To reduce runtime overhead, the instrumentation code is inserted into the translated code only when necessary. For example, when a plugin registers a function hook at a function’s entry point, the instrumentation code for this hook is only placed at the function entry point. When the plugin unregisters this function hook, the instrumentation code will also be removed from the translated code accordingly. To ease the development of plugins, the management of dynamic code instrumentation is completely taken care of in the framework, and thus invisible to the plugins.
+To reduce runtime overhead, the instrumentation code is inserted into the translated code only when necessary. For example, when a plugin registers a function hook at a function’s entry point, the instrumentation code for this hook is only placed at the function entry point. When the plugin unregisters this function hook, the instrumentation code will also be removed from the translated code accordingly. To ease the development of plugins, the management of dynamic code instrumentation is completely taken care of in  the framework, and thus invisible to the plugins.
 
 2. Help Documents
 ========
 
-Please refer to https://code.google.com/p/decaf-platform/wiki/DECAF for help documents.
+Please referto https://code.google.com/p/decaf-platform/wiki/DECAF for help documents.
 
